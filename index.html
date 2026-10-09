@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowStock — Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        // Apply saved theme before first paint to avoid a white flash on refresh
+        (function () {
+            try {
+                if (localStorage.getItem("flowstock_theme") === "night") {
+                    document.documentElement.classList.add("night");
+                }
+            } catch (e) {}
+        })();
+    </script>
+</head>
+<body>
+    <div class="app">
+        <!-- Top bar -->
+        <header class="topbar">
+            <div class="brand">FlowStock</div>
+            <div class="view-toggle" id="viewToggle">
+                <button class="toggle-btn active" data-view="inventory">Inventory</button>
+                <button class="toggle-btn" data-view="tasks">Tasks</button>
+            </div>
+            <button class="add-btn" id="addBtn">+ New</button>
+            <button class="theme-btn" id="themeBtn" title="Toggle night mode">🌙</button>
+        </header>
+
+        <!-- Stat cards -->
+        <section class="stats" id="stats"></section>
+
+        <!-- Main panel -->
+        <main class="panel">
+            <div class="panel-head">
+                <h2 id="panelTitle">Inventory</h2>
+                <input type="search" id="searchInput" placeholder="Search…" class="search">
+            </div>
+
+            <!-- Inventory view -->
+            <div id="inventoryView" class="view active">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>SKU</th>
+                            <th>Stock</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Tasks view -->
+            <div id="tasksView" class="view">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Due</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksBody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="tasks.js"></script>
+    <script src="inventory.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
