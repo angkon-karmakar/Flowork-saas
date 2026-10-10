@@ -1,6 +1,14 @@
 /* storage.js — localStorage helpers */
 
 const Storage = {
+    _lastId: 0,
+
+    // Unique, always-increasing ids (Date.now() alone can repeat when adding quickly)
+    uid() {
+        this._lastId = Math.max(Date.now(), this._lastId + 1);
+        return this._lastId;
+    },
+
     load(key) {
         const raw = localStorage.getItem(key);
         return raw ? JSON.parse(raw) : [];
@@ -25,5 +33,38 @@ const Storage = {
                 { id: 3, title: "Supplier price review", priority: "low", status: "done", due: "2026-10-09" }
             ]);
         }
+        this.migrate();
+    },
+
+    // Folders/lists were added later. On first run (or for data saved by the
+    // old version) create one starter folder + list per space and move any
+    // existing items/tasks into it, so nothing is lost.
+    migrate() {
+        let tree = this.load("flowstock_tree");
+
+        if (!tree.length) {
+            const invFolder = { id: this.uid(), kind: "inventory", type: "folder", name: "Main Warehouse", parentId: null, open: true };
+            const invList = { id: this.uid(), kind: "inventory", type: "list", name: "All Items", parentId: invFolder.id, open: true };
+            const taskFolder = { id: this.uid(), kind: "tasks", type: "folder", name: "Operations", parentId: null, open: true };
+            const taskList = { id: this.uid(), kind: "tasks", type: "list", name: "To-do", parentId: taskFolder.id, open: true };
+            tree = [invFolder, invList, taskFolder, taskList];
+            this.save("flowstock_tree", tree);
+        }
+
+        ["inventory", "tasks"].forEach(kind => {
+            const firstList = tree.find(n => n.kind === kind && n.type === "list");
+            if (!firstList) return;
+
+            const key = "flowstock_" + kind;
+            const rows = this.load(key);
+            let changed = false;
+            rows.forEach(row => {
+                if (row.listId == null) {
+                    row.listId = firstList.id;
+                    changed = true;
+                }
+            });
+            if (changed) this.save(key, rows);
+        });
     }
 };
